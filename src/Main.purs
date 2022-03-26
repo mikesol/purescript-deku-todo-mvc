@@ -26,6 +26,7 @@ import Web.HTML.HTMLInputElement (fromElement, value)
 type Todo = { completed :: Boolean, text :: String }
 -- | Filtering options for the todo list
 data FilterOption = All | Active | Completed
+derive instance Eq FilterOption
 -- | The main actions we can do via the toplevel UI
 data MainUIAction
   = AddTodo -- add whatever is in the current input text as a todo
@@ -158,14 +159,16 @@ main =
                 -- - root (required at the toplevel)
                 -- - psx (created when we use ~!)
                 -- - todos (the value between the sqigglies in the template)
-                { "root.psx.todos":
-                    -- send the new todo to the todo list
-                    xsubgraph (singleton np1 (Just new))
-                , "root.psx.input":
+                { "root.psx.input":
                     -- clear the input
                     D.input'attr [ D.Value := "" ]
                     -- set the new state
-                } $> state { nItems = np1, text = "", todos = insert np1 new state.todos }
+                } *>
+                  when (state.filter /= Completed)
+                    (change {"root.psx.todos":
+                    -- send the new todo to the todo list
+                    xsubgraph (singleton np1 (Just new))
+                  }) $> state { nItems = np1, text = "", todos = insert np1 new state.todos }
           -- if the text is empty, it's a no-op
           else pure state
         -- handle changing text
