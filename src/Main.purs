@@ -17,10 +17,12 @@ import Deku.Graph.DOM as D
 import Deku.Pursx ((~!), pursx)
 import Deku.Toplevel ((🚀))
 import Effect (Effect)
+import Effect.Class.Console as Log
 import Type.Proxy (Proxy)
 import Web.DOM.Element (fromEventTarget)
 import Web.Event.Event (target)
 import Web.HTML.HTMLInputElement (fromElement, value)
+import Web.UIEvent.KeyboardEvent (code, fromEvent)
 
 -- | The type of our todo element
 type Todo = { completed :: Boolean, text :: String }
@@ -105,7 +107,7 @@ main =
       in
         -- here we add the listener to change the text on input
         { input: D.input'attr
-            [ D.OnInput := cb \e -> for_
+            [ D.OnInput := cb \e -> Log.info "bar" *> for_
                 ( target e
                     >>= fromEventTarget
                     >>= fromElement
@@ -113,6 +115,10 @@ main =
                 ( value
                     >=> push <<< ChangeText
                 )
+            , D.OnKeyup := cb \e -> for_ (fromEvent e) \evt -> do
+                Log.info "foo"
+                when (code evt == "Enter") $ do
+                  push AddTodo
             ]
         -- here we add the listener that actually adds the todo
         , addTodo: D.button'attr [ D.OnClick := cb \_ -> push AddTodo ]
