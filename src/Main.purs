@@ -2,13 +2,15 @@ module Main where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.Filterable (filterMap)
 import Data.Foldable (for_)
 import Data.Map (delete, empty, insert, singleton, update)
 import Data.Maybe (Maybe(..))
+import Data.Monoid.Additive (Additive(..))
 import Data.Tuple.Nested ((/\))
 import Deku.Change (change)
-import Deku.Control.Functions ((%%>))
+import Deku.Control.Functions (modifyRes, (%!>))
 import Deku.Graph.Attribute (cb)
 import Deku.Graph.DOM (AsSubgraph(..), SubgraphSig, subgraph, xsubgraph, (:=))
 import Deku.Graph.DOM as D
@@ -205,7 +207,15 @@ main =
         -- it doesn't need to be, as the subgraph keeps track
         -- of its own state
         TodoAction (SetTodo x c) ->
-          pure $ state { todos = update (\{ text } -> Just { text, completed: c }) x state.todos }
+          change
+            -- if there is a filter applied, a change means we
+            -- are switching, so we remove the element from
+            -- the subgraph list
+            { "root.psx.todos": xsubgraph $ case state.filter of
+              All -> empty
+              Completed -> singleton x Nothing
+              Active -> singleton x Nothing
+            } $> state { todos = update (\{ text } -> Just { text, completed: c }) x state.todos }
         -- delete a todo
         -- here, we propagate `Nothing` down to the deleted subgraph
         -- which removes it from the list
@@ -284,25 +294,34 @@ todo raise n =
             }
         -- the state is just the pusher
         ) /\ { push }
-    -- the %%> operator is for loops that are
-    -- _passive_ to their environment.
-    -- That means that they don't respond to incoming changes to
-    -- the environment.
-    -- That makes the first parameter, `action`, _only_ the local action.
-    -- Otherwise, it would be an `Either` and we would need to
-    -- pattern match on information from the parent component
-    -- (this is `input` in Halogen) _or_ our local information.
-    ) %%> \action state ->
-        case action of
-          -- note that our barlow lenses do not start with
-          -- `root`. This is because this is a subgraph. Subgraphs
-          -- start directly at the child components
-          FlipCompletion completed -> change
-            -- set the text of the button bsed on the completion status
-            { "psx.doneText": if completed then "Not Done" else "Done"
-            -- set the css of the text based on the completion status
-            , "psx.todoText": D.p'attr [D.Class := if completed then doneTextCss else notDoneTextCss]
-            -- we change the click listener to flip the completion status
-            , "psx.doneButton":
-                D.button'attr [ D.OnClick := btnClick state.push completed, D.Class := if completed then notDoneButtonCss else doneButtonCss ]
-            } $> state
+          -- we sort so that the last element is first
+          /\ (Additive $ -1 * n)
+    -- the %!> operator is for loops that take a sorting parameter
+    -- that indicates how they will be sorted in the DOM.
+    -- When using grid layouts, this doesn't matter, but
+    -- in our case it does as we're working with a list.
+    -- The sorting parameter is always an additive number.
+    -- In this case, we sort so that the last ID is the first
+    -- displayed. This is how a lot of todo-apps work: they
+    -- display the most recent elements first.
+    ) %!> \envOrAction state ->
+        case envOrAction of
+          -- we respond to a change in the list
+          -- in this case, as our component is passive to input,
+          -- we just need to tell the sorting algorithm
+          -- where to palce it using modifyRes
+          Left _ -> modifyRes (const $ Additive $ -1 * n) $> state
+          -- we respond to an internal action
+          Right action -> case action of
+            -- note that our barlow lenses do not start with
+            -- `root`. This is because this is a subgraph. Subgraphs
+            -- start directly at the child components
+            FlipCompletion completed -> change
+              -- set the text of the button bsed on the completion status
+              { "psx.doneText": if completed then "Not Done" else "Done"
+              -- set the css of the text based on the completion status
+              , "psx.todoText": D.p'attr [D.Class := if completed then doneTextCss else notDoneTextCss]
+              -- we change the click listener to flip the completion status
+              , "psx.doneButton":
+                  D.button'attr [ D.OnClick := btnClick state.push completed, D.Class := if completed then notDoneButtonCss else doneButtonCss ]
+              } $> state
