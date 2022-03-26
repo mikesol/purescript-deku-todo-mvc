@@ -48,6 +48,12 @@ notDoneButtonCss = "flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-whi
 -- when we are display a todo item is not done
 notDoneTextCss :: String
 notDoneTextCss = "w-full text-green"
+-- filter button is selected
+filterButtonSelected :: String
+filterButtonSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 border-fuchsia-600 hover:text-white hover:bg-fuchsia-500"
+-- filter button is selected
+filterButtonNotSelected :: String
+filterButtonNotSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 hover:text-white hover:bg-fuchsia-500"
 
 -- | The main todo list container
 -- | css from https://tailwindcomponents.com/component/todo-list-app
@@ -173,16 +179,25 @@ main =
             -- here, we set everything to "Just" because we
             -- are filtering for all
             { "root.psx.todos": xsubgraph (map Just state.todos)
+            , "root.psx.showDone": D.button'attr [ D.Class := filterButtonNotSelected ]
+            , "root.psx.showAll": D.button'attr [ D.Class := filterButtonSelected ]
+            , "root.psx.showNotDone": D.button'attr [ D.Class := filterButtonNotSelected ]
             } $> state { filter = All }
         FilterTodo Active ->
           change
             -- here, we set actives to `Just` and completed to `Nothing`
             { "root.psx.todos": xsubgraph (filterMap (\x@{ completed } -> if not completed then Just (Just x) else (Just Nothing)) state.todos)
+            , "root.psx.showDone": D.button'attr [ D.Class := filterButtonNotSelected ]
+            , "root.psx.showAll": D.button'attr [ D.Class := filterButtonNotSelected ]
+            , "root.psx.showNotDone": D.button'attr [ D.Class := filterButtonSelected ]
             } $> state { filter = Active }
         FilterTodo Completed ->
           change
             -- here, we set completed to `Just` and actives to `Nothing`
             { "root.psx.todos": xsubgraph (filterMap (\x@{ completed } -> if completed then Just (Just x) else (Just Nothing)) state.todos)
+            , "root.psx.showDone": D.button'attr [ D.Class := filterButtonSelected ]
+            , "root.psx.showAll": D.button'attr [ D.Class := filterButtonNotSelected ]
+            , "root.psx.showNotDone": D.button'attr [ D.Class := filterButtonNotSelected ]
             } $> state { filter = Completed }
         -- these are the actions that are raised from child components
         -- for set todo, we flip the value of completed
