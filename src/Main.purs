@@ -52,10 +52,10 @@ notDoneTextCss :: String
 notDoneTextCss = "w-full text-green"
 -- filter button is selected
 filterButtonSelected :: String
-filterButtonSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 border-fuchsia-600 hover:text-white hover:bg-fuchsia-500"
+filterButtonSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400 text-fuchsia-500 border-fuchsia-600 hover:text-white hover:bg-fuchsia-500"
 -- filter button is selected
 filterButtonNotSelected :: String
-filterButtonNotSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 hover:text-white hover:bg-fuchsia-500"
+filterButtonNotSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400 text-fuchsia-500 hover:text-white hover:bg-fuchsia-500"
 
 -- | The main todo list container
 -- | css from https://tailwindcomponents.com/component/todo-list-app
@@ -64,7 +64,7 @@ filterButtonNotSelected = "p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuc
 mainPursx = pursx :: Proxy
  """
 <div class="h-100 w-full flex items-center justify-center bg-teal-lightest font-sans">
-	<div class="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
+ <div class="bg-white rounded shadow p-6 m-4 w-full lg:w-3/4 lg:max-w-lg">
         <div class="mb-4">
             <h1 class="text-2xl text-gray-900">Todo List</h1>
             <div class="flex mt-4">
@@ -76,9 +76,9 @@ mainPursx = pursx :: Proxy
           ~todos~
         </div>
         <div class="flex mt-4">
-            <button ~showDone~ class="p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 hover:text-white hover:bg-fuchsia-500">Show Done</button>
-            <button ~showNotDone~ class="p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 hover:text-white hover:bg-fuchsia-500">Show Not Done</button>
-            <button ~showAll~ class="p-2 flex-1 border-2 rounded text-fuchsia-400	text-fuchsia-500 border-fuchsia-600 hover:text-white hover:bg-fuchsia-500">Show All</button>
+            <button ~showDone~ class="p-2 flex-1 border-2 rounded text-fuchsia-400 text-fuchsia-500 hover:text-white hover:bg-fuchsia-500">Show Done</button>
+            <button ~showNotDone~ class="p-2 flex-1 border-2 rounded text-fuchsia-400 text-fuchsia-500 hover:text-white hover:bg-fuchsia-500">Show Not Done</button>
+            <button ~showAll~ class="p-2 flex-1 border-2 rounded text-fuchsia-400 text-fuchsia-500 border-fuchsia-600 hover:text-white hover:bg-fuchsia-500">Show All</button>
         </div>
     </div>
 </div>
